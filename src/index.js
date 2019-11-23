@@ -1,34 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-//var currentTurn = 'O';
-
-// class Square extends React.Component {
-//   // constructor(props) {
-//   //   super(props);
-//   //   this.state = {
-//   //     value: null,
-//   //   };
-//   // }
-
-//   // nextTurn(){
-//   //   this.setState({value: currentTurn});
-//   //   if (currentTurn === 'X')
-//   //     currentTurn = 'O';
-//   //   else
-//   //     currentTurn = 'X';
-//   // }
-
-//   render() {
-//     return (
-//       <button className="square" onClick={() => this.props.onClick()} >
-//         {this.props.value}
-//       </button>
-//     );
-//   }
-// }
-
+// Functiona Reac Component
+// Stateless so they don't need React.Component
+// Their state is managed by the Game Component that re-renders their value
 function Square(props) {
   return (
     <button className="square" onClick={props.onClick}>
@@ -37,26 +14,10 @@ function Square(props) {
   );
 }
 
-class Board extends React.Component {
-  // handleClick(i) {
-  //   const history = this.state.history;
-  //   const current = history[history.length - 1];
-  //   const squares = current.squares.slice();
-  //   if (calculateWinner(squares) || squares[i]) {
-  //     return;
-  //   }
-  //   squares[i] = this.state.xIsNext ? 'X' : 'O';
-  //   this.setState({
-  //     history: history.concat([{
-  //       squares: squares,
-  //     }]),
-  //     xIsNext: !this.state.xIsNext,
-  //   });
-  // }
 
-  // renderSquare(i) {
-  //   return <Square value={this.state.squares[i]} onClick={() => this.handleClick(i)}/>;
-  // }
+// Basically squaresController.  It renders the squares based on
+// an array of details given by its parent, Game
+class Board extends React.Component {
   renderSquare(i) {
     return (
       <Square
@@ -90,6 +51,11 @@ class Board extends React.Component {
   }
 }
 
+//The big boy controller
+//Manages state of the board and gives it
+//the current state in the form of an array 
+//of squares
+//keeps track of history of states and history of specific move
 class Game extends React.Component {
   constructor(props) {
     super(props);
@@ -99,10 +65,10 @@ class Game extends React.Component {
       }],
       stepNumber: 0,
       xIsNext: true,
-//histCoord: [{
-  //      col: null,
-    //    row: null,
-      //}]
+      histCoord: [{
+       col: null,
+       row: null,
+      }]
     };
   }
 
@@ -110,7 +76,53 @@ class Game extends React.Component {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice();
-    //const histCoord = this.state.histCoord.slice(0, this.state.stepNumber + 1);
+    const histCoord = this.state.histCoord.slice(0, this.state.stepNumber + 1);
+    let row;
+    let col;
+    //really cruddy way of updating col and row history
+    console.log(i);
+    switch(i){
+      case 0:
+        row = 0;
+        col = 0;
+        break;
+      case 1:
+        row = 0;
+        col = 1;
+        break;
+      case 2:
+        row = 0;
+        col = 2;
+        break;
+      case 3:
+        row = 1;
+        col = 0;
+        break;
+      case 4:
+        row = 1;
+        col = 1;
+        break;
+      case 5:
+        row = 1;
+        col = 2;
+        break;
+      case 6:
+        row = 2;
+        col = 0;
+        break;
+      case 7:
+        row = 2;
+        col = 1;
+        break;
+      case 8:
+        row = 2;
+        col = 2;
+        break;
+      default:
+        row = null;
+        col = null;
+        break;     
+    }
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
@@ -121,8 +133,10 @@ class Game extends React.Component {
       }]),
       stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
-    //  lastRow: histRow[this.state.stepNumber],
-     // lastCol: histCol[this.state.stepNumber],
+      histCoord: histCoord.concat([{
+        col: col,
+        row: row,
+      }])
     });
   }
 
@@ -137,6 +151,7 @@ class Game extends React.Component {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
+    const histCoord = this.state.histCoord;
 
     const moves = history.map((step, move) => {
       const desc = move ?
@@ -149,9 +164,18 @@ class Game extends React.Component {
       );
     });
 
- //   const moveHistory = histCoord.map((step, coord) => {
+    const histList = histCoord.map((step, move) => {
+      const histMsg = (step.col != null) ?
+        'Move :[' + step.col + "][" + step.row + "]" : 
+        'Game has started!';
+        return(
+          <li key={move} class="mb-2 border-bottom">
+            {histMsg}
+          </li>
 
-//});
+        );
+    });
+
 
     let status;
     if (winner) {
@@ -171,7 +195,16 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ol>{moves}</ol><ol>{/*moveHistory*/}</ol>
+          <div className="container">
+            <div className="row">
+              <div className="clearfix visible-xs-block">
+                <ol>{moves}</ol>
+              </div>
+              <div className="clearfix visible-xs-block">
+                <ol>{histList}</ol>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
